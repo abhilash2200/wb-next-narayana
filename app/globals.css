@@ -1,0 +1,442 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brandBlue: #00549e;
+  --color-brandYellow: #ffd700;
+  --color-brandOrange: #f97316;
+  --color-brandOrangeLight: #fff7ed;
+  --color-brandOrangeDark: #ea580c;
+  --color-brandBlueDark: #00427a;
+  --color-brandGreen: #00a651;
+  --z-99999: 99999;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("/assets/fonts/Gilroy-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("/assets/fonts/Gilroy-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gilroy";
+  src: url("/assets/fonts/Gilroy-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Gilroy", sans-serif;
+  background: #ffffff;
+  color: #1f2937;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"]:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+img {
+  max-width: 100%;
+}
+
+::selection {
+  background: #00549e;
+  color: #ffffff;
+}
+
+/* Small visual details used by the original page */
+
+.otp-loader {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bounce-subtle {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+
+  50% {
+    transform: translate(-50%, -4px);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(249, 115, 22, 0);
+  }
+}
+
+@keyframes pulse-green {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(37, 211, 102, 0);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2.5s ease-in-out infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.animate-pulse-green {
+  animation: pulse-green 2s ease-in-out infinite;
+}
+
+/* =========================================
+   Academic Results Slider Styles
+========================================= */
+#academic-results-slider {
+  width: 100%;
+}
+
+#academic-results-slider .splide__track {
+  width: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+#academic-results-slider .splide__track:active {
+  cursor: grabbing;
+}
+
+#academic-results-slider .splide__list {
+  align-items: stretch;
+}
+
+#academic-results-slider .splide__slide {
+  height: auto;
+  user-select: none;
+}
+
+#academic-results-slider img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+#academic-results-slider .splide__pagination {
+  display: none !important;
+}
+
+#academic-results-slider .splide__arrow {
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  opacity: 0.95;
+  width: 2.5rem;
+  height: 2.5rem;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+#academic-results-slider .splide__arrow:hover {
+  background: #00549e;
+  opacity: 1;
+}
+
+#academic-results-slider .splide__arrow:hover svg {
+  fill: #ffffff;
+}
+
+#academic-results-slider .splide__arrow--prev {
+  left: -0.25rem;
+}
+
+#academic-results-slider .splide__arrow--next {
+  right: -0.25rem;
+}
+
+#academic-results-slider .splide:focus,
+#academic-results-slider .splide__track:focus {
+  outline: none;
+}
+
+@media (min-width: 769px) {
+  #academic-results-slider .splide__slide {
+    width: calc((100% - 64px) / 3) !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  #academic-results-slider .splide__slide {
+    width: calc((100% - 24px) / 2) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #academic-results-slider .splide__slide {
+    width: 100% !important;
+  }
+
+  #academic-results-slider .splide__track {
+    cursor: grab;
+  }
+}
+
+/* =========================================
+   Academic Programs Slider Styles
+========================================= */
+#programs-slider,
+#programs-slider .splide {
+  width: 100%;
+}
+
+#programs-slider .splide__track {
+  overflow: hidden;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+#programs-slider .splide__track:active {
+  cursor: grabbing;
+}
+
+#programs-slider .splide__list {
+  align-items: stretch;
+}
+
+#programs-slider .splide__slide {
+  height: auto;
+  user-select: none;
+}
+
+#programs-slider img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+#programs-slider .splide__arrows,
+#programs-slider .splide__arrow,
+#programs-slider .splide__pagination {
+  display: none !important;
+}
+
+#programs-slider .splide:focus,
+#programs-slider .splide__track:focus {
+  outline: none;
+}
+
+@media (min-width: 1025px) {
+  #programs-slider .splide__slide {
+    width: calc((100% - 48px) / 4) !important;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  #programs-slider .splide__slide {
+    width: calc((100% - 32px) / 3) !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  #programs-slider .splide__slide {
+    width: calc((100% - 16px) / 2) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #programs-slider .splide__slide {
+    width: 100% !important;
+  }
+
+  #programs-slider .splide__track {
+    cursor: grab;
+  }
+}
+
+/* Testimonials Slider Dots */
+.testimonial-slider .splide__pagination {
+  bottom: -0.5rem;
+}
+
+.testimonial-slider .splide__pagination__page {
+  background: #fed7aa !important;
+  opacity: 0.7;
+  width: 10px;
+  height: 10px;
+  margin: 0 5px;
+  transition: all 0.3s ease;
+  border-radius: 9999px;
+}
+
+.testimonial-slider .splide__pagination__page.is-active {
+  background: #f97316 !important;
+  opacity: 1;
+  transform: scale(1.25);
+}
+
+/* What Your Child Will Learn Slider - Arrows Outside Box */
+.programs-slider-wrapper {
+  position: relative;
+}
+
+.programs-slider-wrapper .splide__arrow {
+  background: #ffedd5 !important;
+  border: 1.5px solid #fed7aa !important;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25) !important;
+  opacity: 1 !important;
+  width: 2.75rem !important;
+  height: 2.75rem !important;
+  border-radius: 9999px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  transition: all 0.2s ease !important;
+  z-index: 25 !important;
+}
+
+.programs-slider-wrapper .splide__arrow:hover {
+  background: #fed7aa !important;
+  transform: translateY(-50%) scale(1.1) !important;
+}
+
+.programs-slider-wrapper .splide__arrow svg {
+  fill: #ea580c !important;
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+}
+
+.programs-slider-wrapper .splide__arrow--prev {
+  left: -18px !important;
+}
+
+.programs-slider-wrapper .splide__arrow--next {
+  right: -18px !important;
+}
+
+@media (min-width: 768px) {
+  .programs-slider-wrapper .splide__arrow--prev {
+    left: -28px !important;
+  }
+  .programs-slider-wrapper .splide__arrow--next {
+    right: -28px !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .programs-slider-wrapper .splide__arrow--prev {
+    left: -38px !important;
+  }
+  .programs-slider-wrapper .splide__arrow--next {
+    right: -38px !important;
+  }
+}
+
+/* Academic Results Slider - Big Chevrons Outside */
+.results-slider-wrapper {
+  position: relative;
+}
+
+.results-slider-wrapper .splide__arrow {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 0.9 !important;
+  width: 3rem !important;
+  height: 3rem !important;
+  top: 38% !important;
+  transform: translateY(-50%) !important;
+  transition: all 0.2s ease !important;
+  z-index: 25 !important;
+}
+
+.results-slider-wrapper .splide__arrow:hover {
+  opacity: 1 !important;
+  transform: translateY(-50%) scale(1.2) !important;
+}
+
+.results-slider-wrapper .splide__arrow svg {
+  fill: #00549e !important;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+}
+
+.results-slider-wrapper .splide__arrow--prev {
+  left: 0px !important;
+}
+
+.results-slider-wrapper .splide__arrow--next {
+  right: 0px !important;
+}
+
+@media (min-width: 640px) {
+  .results-slider-wrapper .splide__arrow--prev {
+    left: -24px !important;
+  }
+  .results-slider-wrapper .splide__arrow--next {
+    right: -24px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .results-slider-wrapper .splide__arrow svg {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+  .results-slider-wrapper .splide__arrow--prev {
+    left: -36px !important;
+  }
+  .results-slider-wrapper .splide__arrow--next {
+    right: -36px !important;
+  }
+}
+
+/* Dynamic Hero Banner Responsive Background */
+.dynamic-hero-banner {
+  background-color: #15539B;
+  background-image: none !important;
+}
+
+@media (min-width: 768px) {
+  .dynamic-hero-banner {
+    background-image: var(--hero-bg-desktop) !important;
+  }
+}

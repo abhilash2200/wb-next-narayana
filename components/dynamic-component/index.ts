@@ -1,0 +1,14 @@
+export { default as DynamicHero } from "./DynamicHero";
+export { default as DynamicLearningOutcomes } from "./DynamicLearningOutcomes";
+export { default as DynamicWhyChoose } from "./DynamicWhyChoose";
+export { default as DynamicAcademicStage } from "./DynamicAcademicStage";
+export { default as DynamicFacilities } from "./DynamicFacilities";
+export { default as DynamicRightSchool } from "./DynamicRightSchool";
+export { default as DynamicAcademicResults } from "./DynamicAcademicResults";
+export { default as DynamicTestimonials } from "./DynamicTestimonials";
+export { default as DynamicFAQ } from "./DynamicFAQ";
+export { default as DynamicDesktopBanner } from "./DynamicDesktopBanner";
+export { default as DynamicLimiteseat } from "./DynamicLimiteseat";
+export { default as AdmissionsComingSoon } from "./AdmissionsComingSoon";
+export { default as DynamicTemplateRenderer } from "./DynamicTemplateRenderer";
+export { default as PreviewTopBanner } from "./PreviewTopBanner";
