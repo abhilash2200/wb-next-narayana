@@ -84,6 +84,11 @@ export default function SchoolFinder() {
     [classes]
   );
 
+  // Form is complete only when City, Branch, and Class are ALL selected
+  const isFormComplete = Boolean(
+    selectedCity && selectedBranch && selectedClass
+  );
+
   const handleCityChange = (citySlug: string) => {
     setSelectedCity(citySlug);
     setSelectedBranch("");
@@ -196,14 +201,14 @@ export default function SchoolFinder() {
    * If the page is not found: DO NOT REDIRECT ANYWHERE. Show a Toast Notification!
    */
   const handleFindSchool = async () => {
-    // 1. Nothing selected at all
-    if (!selectedCity && !selectedBranch && !selectedClass) {
+    // 1. Strict restriction: User MUST choose all three (City, Branch, and Class)
+    if (!selectedCity || !selectedBranch || !selectedClass) {
       showToast({
         type: "info",
-        icon: "fa-map-marker-alt text-brandOrange",
-        title: "Select Campus",
+        icon: "fa-list-check text-brandOrange",
+        title: "Complete Your Selection",
         message:
-          "Please select a city and branch from the dropdowns above to explore your campus.",
+          "Please select City, Campus, and Class to find your school.",
         actionText: "Enquire Now",
         onAction: () => openModal("enquiry", "School Finder"),
         duration: 5000,
@@ -211,46 +216,27 @@ export default function SchoolFinder() {
       return;
     }
 
-    // Extract names and determine candidate target path
-    const selectedCityData = cities.find((item) => item.slug === selectedCity);
-    const cityName = selectedCityData?.name || selectedCity.replace(/-/g, " ");
-
+    // Extract names and determine candidate target path for the selected class
     const selectedBranchData = branches.find((item) => item.slug === selectedBranch);
     const branchName = selectedBranchData?.name || selectedBranch.replace(/-/g, " ");
 
     const selectedClassData = classes.find((item) => String(item.id) === selectedClass);
     const className = selectedClassData?.name || "";
 
-    let targetPath = "";
-
-    if (selectedClass) {
-      targetPath =
-        selectedClassData?.canonical_path ||
-        (selectedCity && selectedBranch && selectedClassData?.slug
-          ? `/${selectedCity}/${selectedBranch}/${selectedClassData.slug}`
-          : "");
-    } else if (selectedBranch) {
-      targetPath =
-        selectedBranchData?.canonical_path ||
-        (selectedCity && selectedBranchData?.slug
-          ? `/${selectedCity}/${selectedBranchData.slug}`
-          : "");
-    } else if (selectedCity) {
-      targetPath =
-        selectedCityData?.canonical_path ||
-        (selectedCityData?.slug ? `/${selectedCityData.slug}` : "");
-    }
+    const targetPath =
+      selectedClassData?.canonical_path ||
+      (selectedClassData?.slug
+        ? `/${selectedCity}/${selectedBranch}/${selectedClassData.slug}`
+        : "");
 
     // If target path couldn't be resolved: Branch info coming soon, do not redirect
     if (!targetPath) {
       showToast({
         type: "warning",
         icon: "fa-school text-brandOrange",
-        title: branchName ? `Narayana School, ${branchName}` : "Campus Admissions",
-        message: branchName
-          ? `Online admissions details for ${branchName} campus are opening soon. Connect directly with our admissions team to reserve a seat.`
-          : "Campus admissions are open for AY 2027-28. Please connect with our admissions desk to enquire.",
-        actionText: branchName ? `Enquire for ${branchName}` : "Admissions Enquiry",
+        title: `${branchName} Campus`,
+        message: `Online admissions details for ${className || "this class"} at Narayana School, ${branchName} are opening soon. Connect directly with our admissions team to reserve a seat.`,
+        actionText: `Enquire for ${branchName}`,
         onAction: () =>
           openModal(
             "enquiry",
@@ -291,28 +277,9 @@ export default function SchoolFinder() {
         router.push(result.targetPath || targetPath);
       } else {
         // PAGE NOT FOUND IN CMS! DO NOT REDIRECT ANYWHERE!
-        let toastTitle = "";
-        let toastMsg = "";
-        let actionBtnText = "Admissions Enquiry";
-
-        if (selectedClass && selectedBranch) {
-          toastTitle = `${branchName} Campus`;
-          toastMsg = `Online details for ${className || "this class"} at Narayana School, ${branchName} are opening soon. You can connect directly with our admissions team for seat availability and fee details.`;
-          actionBtnText = `Enquire for ${branchName}`;
-        } else if (selectedBranch) {
-          toastTitle = `Narayana School, ${branchName}`;
-          toastMsg = `Online admissions details for our ${branchName} campus are opening soon. Our admissions team is available now to help you with fees, campus visits, and seat reservations.`;
-          actionBtnText = `Enquire for ${branchName}`;
-        } else if (selectedCity) {
-          toastTitle = `${cityName} Campuses`;
-          toastMsg = `Online admissions details for ${cityName} campuses are opening soon. Enquire now to explore seats across our campuses.`;
-          actionBtnText = `Explore ${cityName} Seats`;
-        } else {
-          toastTitle = "Campus Admissions";
-          toastMsg =
-            "Admissions details for this selection are opening soon. Connect directly with our admissions team.";
-          actionBtnText = "Admissions Enquiry";
-        }
+        const toastTitle = `${branchName} Campus`;
+        const toastMsg = `Online details for ${className || "this class"} at Narayana School, ${branchName} are opening soon. You can connect directly with our admissions team for seat availability and fee details.`;
+        const actionBtnText = `Enquire for ${branchName}`;
 
         showToast({
           type: "warning",
@@ -517,12 +484,23 @@ export default function SchoolFinder() {
             </select>
           </div>
 
-          {/* 4. Find School Button */}
+          {/* 4. Find School Button - Disabled by default until all 3 are chosen */}
           <button
             type="button"
             onClick={handleFindSchool}
-            disabled={isSearching}
-            className="sm:col-span-2 lg:col-span-1 w-full lg:w-auto h-11 sm:h-12 px-7 bg-brandOrange hover:bg-orange-600 disabled:opacity-80 disabled:cursor-wait text-white font-bold text-[13px] sm:text-[13.5px] tracking-wider uppercase rounded-lg shadow-md hover:shadow-orange-500/30 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap"
+            disabled={!isFormComplete || isSearching}
+            title={
+              !isFormComplete
+                ? "Please choose City, Campus, and Class to enable"
+                : "Find School"
+            }
+            className={`sm:col-span-2 lg:col-span-1 w-full lg:w-auto h-11 sm:h-12 px-7 font-bold text-[13px] sm:text-[13.5px] tracking-wider uppercase rounded-lg transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap ${
+              !isFormComplete
+                ? "bg-white/15 text-white/40 cursor-not-allowed border border-white/10 shadow-none"
+                : isSearching
+                ? "bg-brandOrange text-white cursor-wait opacity-80 shadow-md"
+                : "bg-brandOrange hover:bg-orange-600 text-white shadow-md hover:shadow-orange-500/30 active:scale-95 cursor-pointer"
+            }`}
           >
             {isSearching ? (
               <>
