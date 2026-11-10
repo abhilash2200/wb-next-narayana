@@ -41,11 +41,11 @@ export default function LimitedSeats({ onOpenModal }: LimitedSeatsProps) {
 
             <div className="space-y-3 text-white md:space-y-4">
               <p className="px-2 text-base font-medium md:text-lg lg:px-0">
-                Secure your spot today!
+                Limited seats available for 2027–28 academic year.
               </p>
 
               <p className="text-xl font-bold md:text-2xl">
-                Limited seats available for 2027–28 academic year.
+                Secure your spot today!
               </p>
 
               <button

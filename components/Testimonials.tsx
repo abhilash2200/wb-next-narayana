@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import Splide from "@splidejs/splide";
-import "@splidejs/splide/css";
+import { Splide, SplideSlide } from "@splidejs/react-splide";
+import "@splidejs/react-splide/css";
 
 const testimonials = [
   {
@@ -23,103 +22,90 @@ const testimonials = [
 ];
 
 export default function Testimonial() {
-  const sliderRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (!sliderRef.current) return;
-
-    const splide = new Splide(sliderRef.current, {
-      type: "loop",
-      perPage: 4,
-      perMove: 1,
-      gap: "1rem",
-      pagination: false,
-      arrows: false,
-      autoplay: false,
-      drag: true,
-      swipe: true,
-      keyboard: true,
-      speed: 600,
-      breakpoints: {
-        1023: {
-          perPage: 2,
-        },
-        767: {
-          perPage: 1,
-        },
-      },
-    });
-
-    splide.mount();
-
-    return () => {
-      splide.destroy();
-    };
-  }, []);
+  const scrollingTestimonials = [...testimonials, ...testimonials];
 
   return (
-    <section className="overflow-hidden bg-white py-16 md:py-20">
-      <div className="container mx-auto px-4">
-        {/* Heading */}
+    <section className="py-16 md:py-20 bg-white overflow-hidden">
+      <div className="container mx-auto px-4 md:px-6">
+        {/* Section Heading matching index.html line 2279 */}
         <h2
-          className="mb-3 text-left text-2xl font-bold text-gray-800 md:mb-16 md:text-center md:text-3xl lg:text-4xl"
+          className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800 md:text-center text-left mb-3 md:mb-16"
           data-animate="fade-up"
         >
           What parents say about Narayana?
         </h2>
 
-        {/* Slider */}
+        {/* Slider matching index.html line 2284 & main.js */}
         <div data-animate="fade-up" data-delay="100">
           <div
-            ref={sliderRef}
-            className="splide mx-auto"
+            id="testimonial-slider"
+            className="testimonial-slider splide max-w-6xl mx-auto"
             aria-label="Parent Testimonials"
           >
-            <div className="splide__track md:pb-12">
-              <ul className="splide__list">
-                {testimonials.map((testimonial) => (
-                  <li
-                    key={testimonial.name}
-                    className="splide__slide h-auto p-2"
-                  >
-                    <div className="flex h-full flex-col justify-between rounded-xl border border-orange-300 bg-white p-5 transition-shadow duration-300 hover:shadow-lg md:p-6">
-                      <div>
-                        {/* Parent information */}
-                        <div className="mb-4 flex items-center gap-3 md:gap-4">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-orange-200 bg-orange-50 md:h-12 md:w-12">
-                            <i className="far fa-user text-lg text-brandOrange md:text-xl" />
-                          </div>
-
-                          <div>
-                            <h4 className="text-base font-bold leading-tight text-gray-800 md:text-lg">
-                              {testimonial.name}
-                            </h4>
-
-                            <p className="mt-0.5 text-xs text-gray-500 md:text-sm">
-                              {testimonial.location}
-                            </p>
-                          </div>
+            <Splide
+              options={{
+                type: "loop",
+                perPage: 3,
+                perMove: 1,
+                gap: "1.5rem",
+                padding: "0.5rem",
+                pagination: true,
+                arrows: false,
+                autoplay: false,
+                drag: true,
+                swipe: true,
+                speed: 600,
+                breakpoints: {
+                  1024: {
+                    perPage: 2,
+                    gap: "1.5rem",
+                    padding: "0.5rem",
+                  },
+                  640: {
+                    perPage: 1,
+                    gap: "1rem",
+                    padding: "0rem",
+                  },
+                },
+              }}
+            >
+              {scrollingTestimonials.map((testimonial, index) => (
+                <SplideSlide key={`${testimonial.name}-${index}`} className="md:p-2 h-auto">
+                  <div className="border border-orange-300 rounded-xl p-5 md:p-6 bg-white h-full flex flex-col justify-between hover:shadow-lg transition-shadow duration-300">
+                    <div>
+                      {/* Parent information */}
+                      <div className="flex items-center gap-3 md:gap-4 mb-4">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-orange-200 flex items-center justify-center bg-orange-50 shrink-0">
+                          <i className="far fa-user text-brandOrange text-lg md:text-xl" />
                         </div>
-
-                        {/* Testimonial */}
-                        <p className="mb-6 text-xs leading-relaxed text-gray-600 md:text-sm">
-                          {testimonial.text}
-                        </p>
+                        <div>
+                          <h4 className="font-bold text-gray-800 text-base md:text-lg leading-tight">
+                            {testimonial.name}
+                          </h4>
+                          <p className="text-md md:text-base text-gray-500 mt-0.5">
+                            {testimonial.location}
+                          </p>
+                        </div>
                       </div>
 
-                      {/* Stars */}
-                      <div className="flex gap-1 text-xs text-yellow-400 md:text-sm">
-                        <i className="fas fa-star" />
-                        <i className="fas fa-star" />
-                        <i className="fas fa-star" />
-                        <i className="fas fa-star" />
-                        <i className="fas fa-star" />
-                      </div>
+                      {/* Testimonial Quote */}
+                      <p className="text-gray-600 text-md md:text-base leading-relaxed mb-6">
+                        {testimonial.text}
+                      </p>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
+
+                    {/* Star Rating */}
+                    <div className="text-yellow-400 text-md md:text-base flex gap-1">
+                      <i className="fas fa-star" />
+                      <i className="fas fa-star" />
+                      <i className="fas fa-star" />
+                      <i className="fas fa-star" />
+                      <i className="fas fa-star" />
+                    </div>
+                  </div>
+                </SplideSlide>
+              ))}
+            </Splide>
           </div>
         </div>
       </div>

@@ -105,13 +105,13 @@ export default function AcademicResults({ onOpenModal }: AcademicResultsProps) {
           </Splide>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-8" data-animate="zoom-in">
           <button
             type="button"
             onClick={() => handleOpenModal("enquiry", "Get Call Back for Your Query")}
-            className="w-full rounded bg-brandOrange px-8 py-3 font-bold text-white shadow-lg transition hover:bg-orange-600 sm:w-auto"
+            className="open-modal-btn w-full sm:w-auto bg-brandOrange hover:bg-orange-600 text-white font-bold py-3 px-8 rounded shadow-lg transition duration-300 cursor-pointer"
           >
-            <i className="fas fa-headset mr-2" />
+            <i className="fas fa-phone-alt transform -scale-x-100 mr-2" />
             Get Call Back for Your Query
           </button>
         </div>
