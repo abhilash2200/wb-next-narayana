@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ModalProvider } from "@/context/ModalContext";
+import { ToastProvider } from "@/context/ToastContext";
 import GSAPScrollTrigger from "@/components/GSAPScrollTrigger";
 import "./globals.css";
 
@@ -37,10 +38,12 @@ export default function RootLayout({
       </head>
       <body>
         <ModalProvider autoOpenDelayMs={7000}>
-          <GSAPScrollTrigger />
-          <Header />
-          {children}
-          <Footer />
+          <ToastProvider>
+            <GSAPScrollTrigger />
+            <Header />
+            {children}
+            <Footer />
+          </ToastProvider>
         </ModalProvider>
       </body>
     </html>

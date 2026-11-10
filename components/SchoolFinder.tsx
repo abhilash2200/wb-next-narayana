@@ -2,15 +2,29 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getSchoolFinderCities, getSchoolFinderBranches, getSchoolFinderClasses, } from "../app/services/schoolFinderService";
-import type { SchoolFinderCity, SchoolFinderBranch, SchoolFinderClass, } from "../app/services/schoolFinderService";
+import {
+  getSchoolFinderCities,
+  getSchoolFinderBranches,
+  getSchoolFinderClasses,
+} from "../app/services/schoolFinderService";
+import type {
+  SchoolFinderCity,
+  SchoolFinderBranch,
+  SchoolFinderClass,
+} from "../app/services/schoolFinderService";
 
-import { getReservationTypesForBranch } from "@/lib/admissionData";
+import {
+  ADMISSION_DATA,
+  slugify,
+  getReservationTypesForBranch,
+} from "@/lib/admissionData";
 import { useModal } from "@/context/ModalContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function SchoolFinder() {
   const router = useRouter();
   const { openModal } = useModal();
+  const { showToast } = useToast();
 
   // Visible selection states
   const [cities, setCities] = useState<SchoolFinderCity[]>([]);
@@ -28,10 +42,9 @@ export default function SchoolFinder() {
   const [selectedCity, setSelectedCity] = useState("");
   const [selectedBranch, setSelectedBranch] = useState("");
   const [selectedClass, setSelectedClass] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
-
-
-  // Hidden middle values (chain: city -> branchs -> boards -> reservation_types -> class)
+  // Hidden middle values (chain: city -> branches -> boards -> reservation_types -> class)
   const selectedBoard = "CBSE";
 
   const reservationTypes = useMemo(() => {
@@ -61,6 +74,7 @@ export default function SchoolFinder() {
       })),
     [branches]
   );
+
   const classesList = useMemo(
     () =>
       classes.map((item) => ({
@@ -69,6 +83,7 @@ export default function SchoolFinder() {
       })),
     [classes]
   );
+
   const handleCityChange = (citySlug: string) => {
     setSelectedCity(citySlug);
     setSelectedBranch("");
@@ -77,25 +92,41 @@ export default function SchoolFinder() {
     setBranchesError("");
 
     const city = cities.find((item) => item.slug === citySlug);
-
     if (city) {
-      void loadBranches(city.id);
+      void loadBranches(city.id, citySlug);
     }
   };
 
-  async function loadBranches(cityId: string | number) {
+  async function loadBranches(cityId: string | number, citySlug?: string) {
     try {
       setBranchesLoading(true);
       setBranchesError("");
 
       const result = await getSchoolFinderBranches(cityId);
-      setBranches(result);
-    } catch (error: unknown) {
-      setBranchesError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load branches."
+      if (result && result.length > 0) {
+        setBranches(result);
+        return;
+      }
+    } catch {
+      // Graceful fallback to ADMISSION_DATA if API fails
+      const activeCitySlug = citySlug || selectedCity;
+      const matchedCity = ADMISSION_DATA.find(
+        (c) => slugify(c.value) === activeCitySlug
       );
+      if (matchedCity) {
+        const fallbackBranches: SchoolFinderBranch[] = matchedCity.branches.map(
+          (b, idx) => ({
+            id: String(idx + 1),
+            city_id: cityId,
+            name: b.label || b.value,
+            slug: slugify(b.value),
+            sort_order: idx,
+          })
+        );
+        setBranches(fallbackBranches);
+        return;
+      }
+      setBranchesError("Unable to load branches.");
     } finally {
       setBranchesLoading(false);
     }
@@ -107,28 +138,49 @@ export default function SchoolFinder() {
     setClasses([]);
     setClassesError("");
 
-    const branch = branches.find(
-      (item) => item.slug === branchSlug
-    );
-
+    const branch = branches.find((item) => item.slug === branchSlug);
     if (branch) {
-      void loadClasses(branch.id);
+      void loadClasses(branch.id, branchSlug);
     }
   };
 
-  async function loadClasses(branchId: string | number) {
+  async function loadClasses(branchId: string | number, branchSlug?: string) {
     try {
       setClassesLoading(true);
       setClassesError("");
 
       const result = await getSchoolFinderClasses(branchId);
-      setClasses(result);
-    } catch (error: unknown) {
-      setClassesError(
-        error instanceof Error
-          ? error.message
-          : "Unable to load classes."
+      if (result && result.length > 0) {
+        setClasses(result);
+        return;
+      }
+    } catch {
+      // Graceful fallback to ADMISSION_DATA if API fails
+      const activeBranchSlug = branchSlug || selectedBranch;
+      const matchedCity = ADMISSION_DATA.find(
+        (c) => slugify(c.value) === selectedCity
       );
+      const matchedBranch = matchedCity?.branches.find(
+        (b) => slugify(b.value) === activeBranchSlug
+      );
+
+      if (matchedBranch) {
+        const allClasses = Array.from(
+          new Set(Object.values(matchedBranch.classes).flatMap((cls) => cls))
+        );
+        const fallbackClasses: SchoolFinderClass[] = allClasses.map(
+          (clsName, idx) => ({
+            id: String(idx + 1),
+            name: clsName,
+            slug: slugify(clsName),
+            sort_order: idx,
+            canonical_path: "",
+          })
+        );
+        setClasses(fallbackClasses);
+        return;
+      }
+      setClassesError("Unable to load classes.");
     } finally {
       setClassesLoading(false);
     }
@@ -138,73 +190,170 @@ export default function SchoolFinder() {
     setSelectedClass(cls);
   };
 
+  /**
+   * Main Find School Handler
+   * Verifies if the target page actually exists before routing.
+   * If the page is not found: DO NOT REDIRECT ANYWHERE. Show a Toast Notification!
+   */
+  const handleFindSchool = async () => {
+    // 1. Nothing selected at all
+    if (!selectedCity && !selectedBranch && !selectedClass) {
+      showToast({
+        type: "info",
+        icon: "fa-map-marker-alt text-brandOrange",
+        title: "Select Campus",
+        message:
+          "Please select a city and branch from the dropdowns above to explore your campus.",
+        actionText: "Enquire Now",
+        onAction: () => openModal("enquiry", "School Finder"),
+        duration: 5000,
+      });
+      return;
+    }
 
-  const handleFindSchool = () => {
-    // 1. Class selected: open the exact class landing page
+    // Extract names and determine candidate target path
+    const selectedCityData = cities.find((item) => item.slug === selectedCity);
+    const cityName = selectedCityData?.name || selectedCity.replace(/-/g, " ");
+
+    const selectedBranchData = branches.find((item) => item.slug === selectedBranch);
+    const branchName = selectedBranchData?.name || selectedBranch.replace(/-/g, " ");
+
+    const selectedClassData = classes.find((item) => String(item.id) === selectedClass);
+    const className = selectedClassData?.name || "";
+
+    let targetPath = "";
+
     if (selectedClass) {
-      const selectedClassData = classes.find(
-        (item) => String(item.id) === selectedClass
-      );
-
-      const targetPath =
+      targetPath =
         selectedClassData?.canonical_path ||
         (selectedCity && selectedBranch && selectedClassData?.slug
           ? `/${selectedCity}/${selectedBranch}/${selectedClassData.slug}`
           : "");
-
-      if (!targetPath) {
-        setClassesError("Published school page not found.");
-        return;
-      }
-
-      router.push(targetPath);
-      return;
-    }
-
-    // 2. Branch selected without a class: open branch page
-    if (selectedBranch) {
-      const selectedBranchData = branches.find(
-        (item) => item.slug === selectedBranch
-      );
-
-      const targetPath =
+    } else if (selectedBranch) {
+      targetPath =
         selectedBranchData?.canonical_path ||
         (selectedCity && selectedBranchData?.slug
           ? `/${selectedCity}/${selectedBranchData.slug}`
           : "");
-
-      if (!targetPath) {
-        setBranchesError("Published branch page not found.");
-        return;
-      }
-
-      router.push(targetPath);
-      return;
-    }
-
-    // 3. Only city selected: open city page
-    if (selectedCity) {
-      const selectedCityData = cities.find(
-        (item) => item.slug === selectedCity
-      );
-
-      const targetPath =
+    } else if (selectedCity) {
+      targetPath =
         selectedCityData?.canonical_path ||
         (selectedCityData?.slug ? `/${selectedCityData.slug}` : "");
+    }
 
-      if (!targetPath) {
-        setCitiesError("Published city page not found.");
-        return;
-      }
-
-      router.push(targetPath);
+    // If target path couldn't be resolved: Branch info coming soon, do not redirect
+    if (!targetPath) {
+      showToast({
+        type: "warning",
+        icon: "fa-school text-brandOrange",
+        title: branchName ? `Narayana School, ${branchName}` : "Campus Admissions",
+        message: branchName
+          ? `Online admissions details for ${branchName} campus are opening soon. Connect directly with our admissions team to reserve a seat.`
+          : "Campus admissions are open for AY 2027-28. Please connect with our admissions desk to enquire.",
+        actionText: branchName ? `Enquire for ${branchName}` : "Admissions Enquiry",
+        onAction: () =>
+          openModal(
+            "enquiry",
+            branchName
+              ? `Narayana School, ${branchName}`
+              : "Admissions Enquiry"
+          ),
+        duration: 6000,
+      });
       return;
     }
 
-    // 4. Nothing selected
-    openModal("enquiry", "Find School");
-  };
+    // 3. Verify page existence with /api/page-check before any navigation
+    try {
+      setIsSearching(true);
 
+      const checkUrl = `/api/page-check?path=${encodeURIComponent(
+        targetPath
+      )}&branch=${encodeURIComponent(selectedBranch)}&city=${encodeURIComponent(
+        selectedCity
+      )}&class=${encodeURIComponent(selectedClass)}`;
+
+      const res = await fetch(checkUrl, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Page check returned ${res.status}`);
+      }
+
+      const result: { exists: boolean; targetPath?: string; message?: string } =
+        await res.json();
+
+      if (result.exists) {
+        // Page exists! Redirect to destination
+        router.push(result.targetPath || targetPath);
+      } else {
+        // PAGE NOT FOUND IN CMS! DO NOT REDIRECT ANYWHERE!
+        let toastTitle = "";
+        let toastMsg = "";
+        let actionBtnText = "Admissions Enquiry";
+
+        if (selectedClass && selectedBranch) {
+          toastTitle = `${branchName} Campus`;
+          toastMsg = `Online details for ${className || "this class"} at Narayana School, ${branchName} are opening soon. You can connect directly with our admissions team for seat availability and fee details.`;
+          actionBtnText = `Enquire for ${branchName}`;
+        } else if (selectedBranch) {
+          toastTitle = `Narayana School, ${branchName}`;
+          toastMsg = `Online admissions details for our ${branchName} campus are opening soon. Our admissions team is available now to help you with fees, campus visits, and seat reservations.`;
+          actionBtnText = `Enquire for ${branchName}`;
+        } else if (selectedCity) {
+          toastTitle = `${cityName} Campuses`;
+          toastMsg = `Online admissions details for ${cityName} campuses are opening soon. Enquire now to explore seats across our campuses.`;
+          actionBtnText = `Explore ${cityName} Seats`;
+        } else {
+          toastTitle = "Campus Admissions";
+          toastMsg =
+            "Admissions details for this selection are opening soon. Connect directly with our admissions team.";
+          actionBtnText = "Admissions Enquiry";
+        }
+
+        showToast({
+          type: "warning",
+          icon: "fa-school text-brandOrange",
+          title: toastTitle,
+          message: toastMsg,
+          actionText: actionBtnText,
+          onAction: () =>
+            openModal(
+              "enquiry",
+              branchName
+                ? `Narayana School, ${branchName}`
+                : "Admissions Enquiry"
+            ),
+          duration: 6000,
+        });
+      }
+    } catch (error) {
+      console.error("SchoolFinder page check error:", error);
+      // On error, DO NOT REDIRECT! Show friendly campus toast
+      showToast({
+        type: "warning",
+        icon: "fa-school text-brandOrange",
+        title: branchName ? `Narayana School, ${branchName}` : "Campus Admissions",
+        message: branchName
+          ? `Admissions for Narayana School, ${branchName} are open for AY 2027-28. Connect directly with our campus admissions counselors.`
+          : "Campus admissions are open for AY 2027-28. Please connect with our admissions team.",
+        actionText: branchName ? `Enquire for ${branchName}` : "Admissions Enquiry",
+        onAction: () =>
+          openModal(
+            "enquiry",
+            branchName
+              ? `Narayana School, ${branchName}`
+              : "Admissions Enquiry"
+          ),
+        duration: 6000,
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -215,17 +364,23 @@ export default function SchoolFinder() {
         setCitiesError("");
 
         const result = await getSchoolFinderCities();
-
-        if (isMounted) {
+        if (isMounted && result && result.length > 0) {
           setCities(result);
+          return;
         }
-      } catch (error: unknown) {
+      } catch {
+        // Graceful fallback to ADMISSION_DATA
         if (isMounted) {
-          setCitiesError(
-            error instanceof Error
-              ? error.message
-              : "Unable to load cities."
+          const fallbackCities: SchoolFinderCity[] = ADMISSION_DATA.map(
+            (c, idx) => ({
+              id: String(idx + 1),
+              name: c.label || c.value,
+              slug: slugify(c.value),
+              sort_order: idx,
+            })
           );
+          setCities(fallbackCities);
+          return;
         }
       } finally {
         if (isMounted) {
@@ -242,7 +397,10 @@ export default function SchoolFinder() {
   }, []);
 
   return (
-    <section id="school-finder" className="relative bg-linear-to-r from-[#002f56] via-[#004f8c] to-[#002f56] py-5 sm:py-6 border-b border-[#003865] shadow-md text-white scroll-mt-20">
+    <section
+      id="school-finder"
+      className="relative bg-gradient-to-r from-[#002f56] via-[#004f8c] to-[#002f56] py-5 sm:py-6 border-b border-[#003865] shadow-md text-white scroll-mt-20"
+    >
       <div className="container mx-auto px-4">
         {/* Automatic hidden middle fields passed only when city & branch are selected */}
         {selectedCity && selectedBranch && (
@@ -278,14 +436,16 @@ export default function SchoolFinder() {
               value={selectedCity}
               onChange={(e) => handleCityChange(e.target.value)}
               disabled={citiesLoading || Boolean(citiesError)}
-              className={`w-full h-11 sm:h-12 bg-white ${selectedCity ? "text-gray-900 font-medium" : "text-gray-400"} text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
+              className={`w-full h-11 sm:h-12 bg-white ${
+                selectedCity ? "text-gray-900 font-medium" : "text-gray-400"
+              } text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
             >
               <option value="">
                 {citiesLoading
                   ? "Loading cities..."
                   : citiesError
-                    ? "Cities unavailable"
-                    : "- Select City -"}
+                  ? "Cities unavailable"
+                  : "- Select City -"}
               </option>
 
               {citiesList.map((city) => (
@@ -296,12 +456,6 @@ export default function SchoolFinder() {
             </select>
           </div>
 
-          {citiesError && (
-            <p role="alert" className="mt-1 text-xs text-red-200">
-              {citiesError}
-            </p>
-          )}
-
           {/* 2. Branch Select */}
           <div className="relative w-full lg:w-64">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-brandBlue">
@@ -311,14 +465,16 @@ export default function SchoolFinder() {
               value={selectedBranch}
               onChange={(e) => handleBranchChange(e.target.value)}
               disabled={!selectedCity || branchesLoading || Boolean(branchesError)}
-              className={`w-full h-11 sm:h-12 bg-white ${selectedBranch ? "text-gray-900 font-medium" : "text-gray-400"} text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
+              className={`w-full h-11 sm:h-12 bg-white ${
+                selectedBranch ? "text-gray-900 font-medium" : "text-gray-400"
+              } text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
             >
               <option value="">
                 {branchesLoading
                   ? "Loading branches..."
                   : branchesError
-                    ? "Branches unavailable"
-                    : "- Select Branch -"}
+                  ? "Branches unavailable"
+                  : "- Select Branch -"}
               </option>
 
               {branchesList.map((branch) => (
@@ -339,18 +495,18 @@ export default function SchoolFinder() {
               value={selectedClass}
               onChange={(e) => handleClassChange(e.target.value)}
               disabled={
-                !selectedBranch ||
-                classesLoading ||
-                Boolean(classesError)
+                !selectedBranch || classesLoading || Boolean(classesError)
               }
-              className={`w-full h-11 sm:h-12 bg-white ${selectedClass ? "text-gray-900 font-medium" : "text-gray-400"} text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
+              className={`w-full h-11 sm:h-12 bg-white ${
+                selectedClass ? "text-gray-900 font-medium" : "text-gray-400"
+              } text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
             >
               <option value="">
                 {classesLoading
                   ? "Loading classes..."
                   : classesError
-                    ? "Classes unavailable"
-                    : "- Select Class -"}
+                  ? "Classes unavailable"
+                  : "- Select Class -"}
               </option>
 
               {classesList.map((item) => (
@@ -359,26 +515,26 @@ export default function SchoolFinder() {
                 </option>
               ))}
             </select>
-
-            {classesError && (
-              <p role="alert" className="mt-1 text-xs text-red-200">
-                {classesError}
-              </p>
-            )}
-
-            {/* <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-400">
-              <i className="fas fa-chevron-down text-[10px]" />
-            </div> */}
           </div>
 
           {/* 4. Find School Button */}
           <button
             type="button"
             onClick={handleFindSchool}
-            className="sm:col-span-2 lg:col-span-1 w-full lg:w-auto h-11 sm:h-12 px-7 bg-brandOrange hover:bg-orange-600 text-white font-bold text-[13px] sm:text-[13.5px] tracking-wider uppercase rounded-lg shadow-md hover:shadow-orange-500/30 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap"
+            disabled={isSearching}
+            className="sm:col-span-2 lg:col-span-1 w-full lg:w-auto h-11 sm:h-12 px-7 bg-brandOrange hover:bg-orange-600 disabled:opacity-80 disabled:cursor-wait text-white font-bold text-[13px] sm:text-[13.5px] tracking-wider uppercase rounded-lg shadow-md hover:shadow-orange-500/30 active:scale-95 transition-all cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap"
           >
-            <i className="fas fa-search text-xs" />
-            <span>FIND SCHOOL</span>
+            {isSearching ? (
+              <>
+                <i className="fas fa-spinner fa-spin text-xs" />
+                <span>SEARCHING...</span>
+              </>
+            ) : (
+              <>
+                <i className="fas fa-search text-xs" />
+                <span>FIND SCHOOL</span>
+              </>
+            )}
           </button>
         </div>
       </div>
