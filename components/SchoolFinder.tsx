@@ -403,16 +403,15 @@ export default function SchoolFinder() {
               value={selectedCity}
               onChange={(e) => handleCityChange(e.target.value)}
               disabled={citiesLoading || Boolean(citiesError)}
-              className={`w-full h-11 sm:h-12 bg-white ${
-                selectedCity ? "text-gray-900 font-medium" : "text-gray-400"
-              } text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
+              className={`w-full h-11 sm:h-12 bg-white ${selectedCity ? "text-gray-900 font-medium" : "text-gray-400"
+                } text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
             >
               <option value="">
                 {citiesLoading
                   ? "Loading cities..."
                   : citiesError
-                  ? "Cities unavailable"
-                  : "- Select City -"}
+                    ? "Cities unavailable"
+                    : "- Select City -"}
               </option>
 
               {citiesList.map((city) => (
@@ -432,16 +431,15 @@ export default function SchoolFinder() {
               value={selectedBranch}
               onChange={(e) => handleBranchChange(e.target.value)}
               disabled={!selectedCity || branchesLoading || Boolean(branchesError)}
-              className={`w-full h-11 sm:h-12 bg-white ${
-                selectedBranch ? "text-gray-900 font-medium" : "text-gray-400"
-              } text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
+              className={`w-full h-11 sm:h-12 bg-white ${selectedBranch ? "text-gray-900 font-medium" : "text-gray-400"
+                } text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
             >
               <option value="">
                 {branchesLoading
                   ? "Loading branches..."
                   : branchesError
-                  ? "Branches unavailable"
-                  : "- Select Branch -"}
+                    ? "Branches unavailable"
+                    : "- Select Branch -"}
               </option>
 
               {branchesList.map((branch) => (
@@ -464,16 +462,15 @@ export default function SchoolFinder() {
               disabled={
                 !selectedBranch || classesLoading || Boolean(classesError)
               }
-              className={`w-full h-11 sm:h-12 bg-white ${
-                selectedClass ? "text-gray-900 font-medium" : "text-gray-400"
-              } text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
+              className={`w-full h-11 sm:h-12 bg-white ${selectedClass ? "text-gray-900 font-medium" : "text-gray-400"
+                } text-[13.5px] sm:text-[14px] pl-9 pr-8 rounded-lg border border-gray-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-brandOrange`}
             >
               <option value="">
                 {classesLoading
                   ? "Loading classes..."
                   : classesError
-                  ? "Classes unavailable"
-                  : "- Select Class -"}
+                    ? "Classes unavailable"
+                    : "- Select Class -"}
               </option>
 
               {classesList.map((item) => (
@@ -494,13 +491,12 @@ export default function SchoolFinder() {
                 ? "Please choose City, Campus, and Class to enable"
                 : "Find School"
             }
-            className={`sm:col-span-2 lg:col-span-1 w-full lg:w-auto h-11 sm:h-12 px-7 font-bold text-[13px] sm:text-[13.5px] tracking-wider uppercase rounded-lg transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap ${
-              !isFormComplete
+            className={`sm:col-span-2 lg:col-span-1 w-full lg:w-auto h-11 sm:h-12 px-7 font-bold text-[13px] sm:text-[13.5px] tracking-wider uppercase rounded-lg transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap ${!isFormComplete
                 ? "bg-white/15 text-white/40 cursor-not-allowed border border-white/10 shadow-none"
                 : isSearching
-                ? "bg-brandOrange text-white cursor-wait opacity-80 shadow-md"
-                : "bg-brandOrange hover:bg-orange-600 text-white shadow-md hover:shadow-orange-500/30 active:scale-95 cursor-pointer"
-            }`}
+                  ? "bg-brandOrange text-white cursor-wait opacity-80 shadow-md"
+                  : "bg-brandOrange hover:bg-orange-600 text-white shadow-md hover:shadow-orange-500/30 active:scale-95 cursor-pointer"
+              }`}
           >
             {isSearching ? (
               <>
