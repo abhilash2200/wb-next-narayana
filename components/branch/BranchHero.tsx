@@ -1,107 +1,179 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useModal } from "@/context/ModalContext";
 import AdmissionForm from "@/components/AdmissionForm";
-import { BranchPageData } from "@/types/branch-page";
+import { BranchHeroData } from "@/data/branchStaticData";
 
 interface BranchHeroProps {
-  data: BranchPageData;
+  data: BranchHeroData;
+  onOpenModal?: (action: "brochure" | "fees", title?: string) => void;
 }
 
-export default function BranchHero({ data }: BranchHeroProps) {
-  return (
-    <section className="relative bg-linear-to-r from-[#002f56] via-[#004f8c] to-[#002f56] text-white py-12 md:py-16 overflow-hidden">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          {/* Left Content */}
-          <div className="lg:col-span-7 space-y-5 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 bg-brandOrange/20 border border-brandOrange/40 text-brandOrangeLight px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
-              <i className="fas fa-map-marker-alt text-brandOrange" />
-              <span>
-                {data.hero.badge} · {data.cityName}
-              </span>
-            </div>
+export default function BranchHero({ data, onOpenModal }: BranchHeroProps) {
+  const { openModal } = useModal();
+  const handleOpenModal = onOpenModal || openModal;
+  const statsContainerRef = useRef<HTMLDivElement>(null);
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight">
-              {data.hero.title}
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger);
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    if (prefersReducedMotion || !statsContainerRef.current) return;
+
+    const counterElements =
+      statsContainerRef.current.querySelectorAll<HTMLElement>("[data-counter-target]");
+
+    const ctx = gsap.context(() => {
+      counterElements.forEach((el) => {
+        const targetVal = parseFloat(el.getAttribute("data-counter-target") || "0");
+        const delayAttr = parseFloat(el.getAttribute("data-counter-delay") || "0");
+        const delayInSec = delayAttr >= 10 ? delayAttr / 1000 : delayAttr;
+
+        if (isNaN(targetVal) || targetVal <= 0) return;
+
+        const obj = { val: 0 };
+        el.textContent = "0";
+
+        gsap.to(obj, {
+          val: targetVal,
+          duration: 2,
+          delay: delayInSec,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: el,
+            start: "top 95%",
+            once: true,
+          },
+          onUpdate: () => {
+            el.textContent = Math.floor(obj.val).toLocaleString("en-IN");
+          },
+          onComplete: () => {
+            el.textContent = targetVal.toLocaleString("en-IN");
+          },
+        });
+      });
+    }, statsContainerRef);
+
+    return () => {
+      ctx.revert();
+    };
+  }, []);
+
+  return (
+    <section
+      className="
+        md:bg-[url('/assets/bvanner-4.webp')]
+        pt-8 md:pt-0
+        bg-[#15539B]
+        bg-cover bg-center
+        min-h-auto
+        py-12
+        lg:min-h-162.5
+        lg:py-0
+        lg:pt-20
+        flex items-center
+        relative
+        -mt-1
+        overflow-x-hidden
+      "
+    >
+      <div className="container mx-auto px-4 relative z-20 w-full">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-12">
+          {/* LEFT SIDE */}
+          <div
+            className="text-white lg:w-3/5 w-full text-left"
+            data-animate="fade-right"
+            data-duration="1000"
+          >
+            <h2 className="text-[18px] leading-tight md:text-2xl font-medium mb-2 lg:mb-1">
+              {data.preHeading}
+            </h2>
+
+            <h1 className="text-[32px] md:text-4xl lg:text-5xl font-bold text-brandYellow mb-6 lg:mb-8 leading-tight">
+              {data.mainHeadingPrefix}{" "}
+              <span className="text-white">{data.branchHighlight}</span>
             </h1>
 
-            <p className="text-blue-100 text-sm sm:text-base md:text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              {data.hero.subtitle}
-            </p>
+            {/* STATS */}
+            <div
+              id="branch-hero-stats"
+              ref={statsContainerRef}
+              className="grid grid-cols-2 md:grid-cols-6 gap-2 md:gap-6 mb-6 lg:mb-8"
+            >
+              {data.counters.map((counter) => (
+                <div
+                  key={counter.label}
+                  data-animate="fade-up"
+                  data-delay={counter.delay}
+                >
+                  <div className="text-[25px] md:text-3xl font-bold">
+                    <span
+                      className="counter"
+                      data-counter-target={counter.target}
+                      data-counter-delay={counter.delay}
+                    >
+                      {counter.target.toLocaleString("en-IN")}
+                    </span>
+                    +
+                  </div>
 
-            {/* Key Quick Badges */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 max-w-lg mx-auto lg:mx-0">
-              <div className="bg-white/10 backdrop-blur-xs p-3 rounded-lg border border-white/10 text-center">
-                <div className="text-xl sm:text-2xl font-bold text-brandYellow">
-                  47+
+                  <div className="text-[15px] md:text-sm text-blue-100">
+                    {counter.label}
+                  </div>
                 </div>
-                <div className="text-[11px] sm:text-xs text-blue-200">
-                  Years Legacy
-                </div>
-              </div>
-              <div className="bg-white/10 backdrop-blur-xs p-3 rounded-lg border border-white/10 text-center">
-                <div className="text-xl sm:text-2xl font-bold text-brandYellow">
-                  900+
-                </div>
-                <div className="text-[11px] sm:text-xs text-blue-200">
-                  Campuses Pan India
-                </div>
-              </div>
-              <div className="col-span-2 sm:col-span-1 bg-white/10 backdrop-blur-xs p-3 rounded-lg border border-white/10 text-center">
-                <div className="text-xl sm:text-2xl font-bold text-brandYellow">
-                  6 Lakh+
-                </div>
-                <div className="text-[11px] sm:text-xs text-blue-200">
-                  Proud Learners
-                </div>
-              </div>
+              ))}
             </div>
 
-            {/* Contact strip */}
-            <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs sm:text-sm text-blue-100">
-              {data.phone && (
-                <a
-                  href={`tel:${data.phone}`}
-                  className="inline-flex items-center gap-2 hover:text-white transition"
+            {/* BULLET POINTS */}
+            <ul className="space-y-3 mb-8 text-sm md:text-base font-light text-left inline-block lg:block">
+              {data.bulletPoints.map((point, index) => (
+                <li
+                  key={index}
+                  className={`flex items-start text-[16px] md:text-base md:items-center gap-3 ${
+                    index >= 2 ? "hidden md:flex" : ""
+                  }`}
                 >
-                  <i className="fas fa-phone text-brandOrange" />
-                  <span>{data.phone}</span>
-                </a>
-              )}
-              {data.phone && data.email && (
-                <span className="hidden sm:inline">|</span>
-              )}
-              {data.email && (
-                <a
-                  href={`mailto:${data.email}`}
-                  className="inline-flex items-center gap-2 hover:text-white transition"
-                >
-                  <i className="fas fa-envelope text-brandOrange" />
-                  <span>{data.email}</span>
-                </a>
-              )}
+                  <span className="w-1.5 h-1.5 bg-white rounded-full mt-2 md:mt-0 shrink-0" />
+                  {point}
+                </li>
+              ))}
+            </ul>
+
+            {/* CTA */}
+            <div className="flex justify-center lg:justify-start">
+              <button
+                type="button"
+                onClick={() => handleOpenModal("fees", "Get Admission Fees Details")}
+                className="bg-brandOrange hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-md flex items-center gap-2 transition shadow-lg w-full md:w-auto justify-center cursor-pointer"
+              >
+                {data.ctaButtonText || "Get Admission Fees Details"}
+              </button>
             </div>
           </div>
 
-          {/* Right Card - Admission Enquiry Form */}
-          <div className="lg:col-span-5 max-w-md mx-auto w-full">
-            <div className="bg-white rounded-xl shadow-2xl border-2 border-brandOrange overflow-hidden p-5 sm:p-6 text-gray-900">
-              <div className="mb-4">
-                <h3 className="text-xl font-bold text-gray-900">
-                  Admission Enquiry 2027-28
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  Connect directly with the {data.branchName} campus counselor.
-                </p>
-              </div>
-             <AdmissionForm
-            formId="branch-admission"
-            variant="card"
-            initialCity={data.cityName}
-            initialBranch={data.branchName}
-            pageId={0}
-            revisionId={0}
-            />
+          {/* ADMISSION CARD */}
+          <div
+            className="w-full lg:w-100 bg-white rounded-xl shadow-2xl border-2 border-brandOrange overflow-hidden mx-auto"
+            data-animate="fade-left"
+            data-duration="1000"
+          >
+            <div className="p-5 md:p-6">
+              <h3 className="text-[22px] md:text-xl font-bold text-black mb-4">
+                {data.formTitle || "Admission Open for AY 2027-28"}
+              </h3>
+
+              <AdmissionForm
+                formId="branch-hero"
+                variant="card"
+                initialCity={data.defaultCity}
+                initialBranch={data.defaultBranch}
+              />
             </div>
           </div>
         </div>

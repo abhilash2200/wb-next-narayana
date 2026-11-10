@@ -1,60 +1,48 @@
-"use client";
-
 import Image from "next/image";
-import { BranchFacility } from "@/types/branch-page";
+import { BranchFacilitiesData } from "@/data/branchStaticData";
 
 interface BranchFacilitiesProps {
-  branchName: string;
-  facilities: BranchFacility[];
+  data: BranchFacilitiesData;
 }
 
-export default function BranchFacilities({
-  branchName,
-  facilities,
-}: BranchFacilitiesProps) {
+export default function BranchFacilities({ data }: BranchFacilitiesProps) {
   return (
-    <section className="py-12 md:py-16 bg-white">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <div className="text-brandBlue font-bold text-xs uppercase tracking-wider mb-2">
-            Campus Infrastructure
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#003865]">
-            World-Class Facilities at {branchName}
+    <section className="overflow-hidden bg-gray-50 py-16 md:py-20">
+      <div className="container mx-auto px-4">
+        <div
+          className="mb-10 text-left md:mb-12 md:text-center"
+          data-animate="fade-up"
+        >
+          <h2 className="mb-3 text-2xl font-bold text-gray-800 md:text-3xl lg:text-4xl">
+            {data.heading}
           </h2>
-          <p className="text-gray-600 text-sm mt-2">
-            Providing students with an enabling environment designed for exploration and growth.
+          <p className="text-md text-gray-500 md:text-base">
+            {data.subheading}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {facilities.map((fac, idx) => (
+        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {data.facilities.map((facility) => (
             <div
-              key={idx}
-              className="bg-gray-50 rounded-xl overflow-hidden shadow-xs hover:shadow-md transition border border-gray-100 flex flex-col"
+              key={facility.title}
+              className="overflow-hidden rounded-lg bg-white shadow-sm transition-shadow hover:shadow-md"
+              data-animate="fade-up"
+              data-delay={facility.delay}
             >
-              {fac.image && (
-                <div className="relative h-44 w-full">
-                  <Image
-                    src={fac.image}
-                    alt={fac.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <div className="p-5 flex-1 flex flex-col justify-between">
-                <div>
-                  <h4 className="font-bold text-[#003865] text-base mb-1.5 flex items-center gap-2">
-                    {fac.icon && (
-                      <i className={`${fac.icon} text-brandOrange text-sm`} />
-                    )}
-                    <span>{fac.title}</span>
-                  </h4>
-                  <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                    {fac.description}
-                  </p>
-                </div>
+              <Image
+                src={facility.image}
+                alt={facility.alt}
+                width={360}
+                height={240}
+                className="h-48 w-full object-cover transition-transform duration-300 hover:scale-105"
+              />
+              <div className="p-6">
+                <h3 className="mb-2 text-xl font-bold text-gray-800">
+                  {facility.title}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {facility.description}
+                </p>
               </div>
             </div>
           ))}

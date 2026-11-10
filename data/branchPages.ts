@@ -1,29 +1,10 @@
 import { BranchPageData } from "@/types/branch-page";
 import { findBranchGlobally, slugify } from "@/lib/admissionData";
-
-/**
- * Fixed list of branch slugs allowed for direct `baseurl/{branch}` routing.
- * Only the branch names defined in this constant will be accessible as direct static branch pages.
- * You can edit, add, or remove branch slugs here.
- */
-export const ALLOWED_STATIC_BRANCH_SLUGS = [
-  "mahestala",
-  "bally",
-] as const;
-
-export type AllowedStaticBranchSlug = (typeof ALLOWED_STATIC_BRANCH_SLUGS)[number];
-
-/**
- * Validates whether a requested slug matches one of the allowed static branches.
- * Normalizes hyphens, spaces, and casing (e.g. "new-town", "newtown", "New Town" all match).
- */
-export function isAllowedStaticBranch(branchSlug: string): boolean {
-  if (!branchSlug) return false;
-  const clean = branchSlug.toLowerCase().trim().replace(/[\s_-]+/g, "");
-  return ALLOWED_STATIC_BRANCH_SLUGS.some(
-    (b) => b.toLowerCase().replace(/[\s_-]+/g, "") === clean
-  );
-}
+export {
+  ALLOWED_STATIC_BRANCH_SLUGS,
+  type AllowedStaticBranchSlug,
+  isAllowedStaticBranch,
+} from "./branchStaticData";
 
 export const branchDataRegistry: Record<string, BranchPageData> = {};
 

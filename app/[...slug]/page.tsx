@@ -1,10 +1,10 @@
 import { Metadata } from "next";
 import { getPageDataForSegments, pageDataRegistry } from "@/data/dynamicPages";
 import {
-  getBranchPageData,
   ALLOWED_STATIC_BRANCH_SLUGS,
   isAllowedStaticBranch,
 } from "@/data/branchPages";
+import { getBranchStaticData } from "@/data/branchStaticData";
 import { getLandingPageTemplate, type LandingPageTemplate } from "@/app/services/landingPageService";
 import {
   ADMISSION_DATA,
@@ -76,7 +76,7 @@ export async function generateMetadata({
 
   // Direct static branch page metadata (e.g. baseurl/howrah, baseurl/newtown)
   if (slug.length === 1 && isAllowedStaticBranch(slug[0])) {
-    const branchData = getBranchPageData(slug[0]);
+    const branchData = getBranchStaticData(slug[0]);
     if (branchData) {
       return {
         title: branchData.metaTitle,

@@ -1,79 +1,113 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import Splide from "@splidejs/splide";
+import "@splidejs/splide/css";
+import { BranchTestimonialsData } from "@/data/branchStaticData";
+
 interface BranchTestimonialsProps {
-  branchName: string;
+  data: BranchTestimonialsData;
 }
 
-const reviews = [
-  {
-    parent: "Siddharth Roy",
-    student: "Class 8 Parent",
-    rating: 5,
-    quote:
-      "The academic discipline and focus on conceptual clarity have transformed my daughter's confidence. Teachers provide individual attention to every doubt.",
-  },
-  {
-    parent: "Maitreyi Sen",
-    student: "Class 10 Parent",
-    rating: 5,
-    quote:
-      "Narayana's integrated curriculum eliminated the need for outside tuition. Both board prep and competitive foundation are handled meticulously inside the classroom.",
-  },
-  {
-    parent: "Debashis Banerjee",
-    student: "Class 5 Parent",
-    rating: 5,
-    quote:
-      "Safe campus environment, excellent digital classrooms, and approachable teachers. We are extremely satisfied with our child's all-round development.",
-  },
-];
+export default function BranchTestimonials({ data }: BranchTestimonialsProps) {
+  const sliderRef = useRef<HTMLDivElement | null>(null);
 
-export default function BranchTestimonials({ branchName }: BranchTestimonialsProps) {
+  useEffect(() => {
+    if (!sliderRef.current) return;
+
+    const splide = new Splide(sliderRef.current, {
+      type: "loop",
+      perPage: 4,
+      perMove: 1,
+      gap: "1rem",
+      pagination: false,
+      arrows: false,
+      autoplay: false,
+      drag: true,
+      swipe: true,
+      keyboard: true,
+      speed: 600,
+      breakpoints: {
+        1023: {
+          perPage: 2,
+        },
+        767: {
+          perPage: 1,
+        },
+      },
+    });
+
+    splide.mount();
+
+    return () => {
+      splide.destroy();
+    };
+  }, []);
+
   return (
-    <section className="py-12 md:py-16 bg-gray-50">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="text-center max-w-2xl mx-auto mb-10">
-          <div className="text-brandBlue font-bold text-xs uppercase tracking-wider mb-2">
-            Parent Trust
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#003865]">
-            What Parents Say About {branchName} Campus
-          </h2>
-          <p className="text-gray-600 text-sm mt-2">
-            Hear firsthand experiences from parents who entrust their children to our care.
-          </p>
-        </div>
+    <section className="overflow-hidden bg-white py-16 md:py-20">
+      <div className="container mx-auto px-4">
+        {/* Heading */}
+        <h2
+          className="mb-3 text-left text-2xl font-bold text-gray-800 md:mb-16 md:text-center md:text-3xl lg:text-4xl"
+          data-animate="fade-up"
+        >
+          {data.heading}
+        </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {reviews.map((r, idx) => (
-            <div
-              key={idx}
-              className="bg-white p-6 rounded-xl border border-gray-100 shadow-xs hover:shadow-md transition flex flex-col justify-between"
-            >
-              <div>
-                <div className="flex items-center gap-1 text-brandYellow text-sm mb-3">
-                  {[...Array(r.rating)].map((_, i) => (
-                    <i key={i} className="fas fa-star" />
-                  ))}
-                </div>
-                <p className="text-gray-700 text-sm italic leading-relaxed mb-4">
-                  &ldquo;{r.quote}&rdquo;
-                </p>
-              </div>
+        {/* Slider */}
+        <div data-animate="fade-up" data-delay="100">
+          <div
+            ref={sliderRef}
+            className="splide mx-auto"
+            aria-label="Parent Testimonials"
+          >
+            <div className="splide__track md:pb-12">
+              <ul className="splide__list">
+                {data.testimonials.map((testimonial) => (
+                  <li
+                    key={testimonial.name}
+                    className="splide__slide h-auto p-2"
+                  >
+                    <div className="flex h-full flex-col justify-between rounded-xl border border-orange-300 bg-white p-5 transition-shadow duration-300 hover:shadow-lg md:p-6">
+                      <div>
+                        {/* Parent information */}
+                        <div className="mb-4 flex items-center gap-3 md:gap-4">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-orange-200 bg-orange-50 md:h-12 md:w-12">
+                            <i className="far fa-user text-lg text-brandOrange md:text-xl" />
+                          </div>
 
-              <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                <div>
-                  <h4 className="font-bold text-[#003865] text-sm">
-                    {r.parent}
-                  </h4>
-                  <p className="text-xs text-gray-500">{r.student}</p>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-brandOrange/10 text-brandOrange flex items-center justify-center font-bold text-xs">
-                  <i className="fas fa-quote-right" />
-                </div>
-              </div>
+                          <div>
+                            <h4 className="text-base font-bold leading-tight text-gray-800 md:text-lg">
+                              {testimonial.name}
+                            </h4>
+
+                            <p className="mt-0.5 text-xs text-gray-500 md:text-sm">
+                              {testimonial.location}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Testimonial */}
+                        <p className="mb-6 text-xs leading-relaxed text-gray-600 md:text-sm">
+                          {testimonial.text}
+                        </p>
+                      </div>
+
+                      {/* Stars */}
+                      <div className="flex gap-1 text-xs text-yellow-400 md:text-sm">
+                        <i className="fas fa-star" />
+                        <i className="fas fa-star" />
+                        <i className="fas fa-star" />
+                        <i className="fas fa-star" />
+                        <i className="fas fa-star" />
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </section>
