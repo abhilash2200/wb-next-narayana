@@ -1,14 +1,16 @@
 import { Metadata } from "next";
 import { getPageDataForSegments, pageDataRegistry } from "@/data/dynamicPages";
-// import { getBranchPageData } from "@/data/branchPages";
+import {
+  getBranchPageData,
+  ALLOWED_STATIC_BRANCH_SLUGS,
+  isAllowedStaticBranch,
+} from "@/data/branchPages";
 import { getLandingPageTemplate, type LandingPageTemplate } from "@/app/services/landingPageService";
 import {
   ADMISSION_DATA,
-  // findBranchGlobally,
-  getAllBranchList,
   slugify,
 } from "@/lib/admissionData";
-// import BranchDetailView from "@/components/branch/BranchDetailView";
+import BranchDetailView from "@/components/branch/BranchDetailView";
 import {
   DynamicHero,
   DynamicLearningOutcomes,
@@ -48,9 +50,9 @@ export function generateStaticParams() {
     addParam([slug]);
   });
 
-  // 2. Direct branch pages: baseurl/{branchname} (e.g. /howrah, /newtown, /asansol)
-  getAllBranchList().forEach((b) => {
-    addParam([b.slug]);
+  // 2. Direct static branch pages: baseurl/{branchname} (restricted to ALLOWED_STATIC_BRANCH_SLUGS)
+  ALLOWED_STATIC_BRANCH_SLUGS.forEach((branchSlug) => {
+    addParam([branchSlug]);
   });
 
   // 3. City pages and hierarchical paths (e.g. /kolkata, /kolkata/newtown)
@@ -71,6 +73,24 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+
+  // Direct static branch page metadata (e.g. baseurl/howrah, baseurl/newtown)
+  if (slug.length === 1 && isAllowedStaticBranch(slug[0])) {
+    const branchData = getBranchPageData(slug[0]);
+    if (branchData) {
+      return {
+        title: branchData.metaTitle,
+        description: branchData.metaDescription,
+        alternates: {
+          canonical: `/${slug[0]}`,
+        },
+        robots: {
+          index: true,
+          follow: true,
+        },
+      };
+    }
+  }
 
   if (slug.length >= 1 && slug.length <= 3) {
     try {
@@ -156,7 +176,12 @@ export async function generateMetadata({
 export default async function DynamicCatchAllPage({ params }: PageProps) {
   const { slug } = await params;
 
-  // Dynamic API Page Resolver:
+  // 1. Direct Static Branch Page: baseurl/{branch} (Active only for allowed branches in ALLOWED_STATIC_BRANCH_SLUGS)
+  if (slug.length === 1 && isAllowedStaticBranch(slug[0])) {
+    return <BranchDetailView branchId={slug[0]} />;
+  }
+
+  // 2. Dynamic API Page Resolver:
   // - 1 slug: /kolkata (Load exact city template)
   // - 2 slugs: /kolkata/saltlake (Load exact city and branch template)
   // - 3 slugs: /kolkata/saltlake/e-kidz-n-nursery (Load exact city, branch, and class template)
@@ -179,11 +204,6 @@ export default async function DynamicCatchAllPage({ params }: PageProps) {
       return <DynamicTemplateRenderer template={template} />;
     }
   }
-
-  // Direct branch page - temporarily commented off
-  // if (slug.length === 1 && findBranchGlobally(slug[0])) {
-  //   return <BranchDetailView branchId={slug[0]} />;
-  // }
 
   // Existing dynamic pages
   const pageData = getPageDataForSegments(slug);
