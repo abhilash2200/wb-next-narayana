@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useModal } from "@/context/ModalContext";
 
 export interface FeeStructureProps {
@@ -30,23 +29,22 @@ export default function FeeStructure({
           data-animate="fade-up"
         >
           {/* Student Illustration */}
-          <div className="flex justify-center md:justify-start md:order-1 md:flex-[0_0_auto] md:w-[38%] lg:w-[34%] -mt-4 md:-mt-20 md:-ml-2 lg:-ml-4">
-            <Image
+          <div
+            className="flex justify-center md:justify-start md:order-1 md:flex-none md:w-[38%] lg:w-[34%] -mt-4 md:-mt-20 md:-ml-2 lg:-ml-4"
+            style={{ flex: "0 0 auto" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={image}
               alt="Student with book"
-              width={340}
-              height={340}
               className="w-full max-w-[280px] md:max-w-none md:w-auto md:max-h-[340px] object-contain object-bottom"
               loading="lazy"
+              decoding="async"
             />
           </div>
 
           {/* Text Content & Action */}
-          <div
-            className="flex-1 flex flex-col justify-center px-6 pb-6 md:pb-8 md:pt-8 md:pl-4 lg:pl-8 md:pr-10 lg:pr-16 text-center md:text-left"
-            data-animate="fade-up"
-            data-delay="150"
-          >
+          <div className="flex-1 flex flex-col justify-center px-6 pb-6 md:pb-8 md:pt-8 md:pl-4 lg:pl-8 md:pr-10 lg:pr-16 text-center md:text-left">
             <h2 className="text-white text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
               {title}
             </h2>
@@ -56,7 +54,7 @@ export default function FeeStructure({
             <button
               type="button"
               onClick={handleOpenModal}
-              className="bg-[#f5821f] hover:bg-[#e0751a] text-white font-bold py-3 px-6 md:px-8 rounded-lg transition shadow-lg w-fit mx-auto md:mx-0 active:scale-95 cursor-pointer"
+              className="open-modal-btn bg-[#f5821f] hover:bg-[#e0751a] text-white font-bold py-3 px-6 md:px-8 rounded-lg transition shadow-lg w-fit mx-auto md:mx-0 cursor-pointer"
             >
               {buttonText}
             </button>
