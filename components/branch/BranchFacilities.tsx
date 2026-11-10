@@ -32,15 +32,15 @@ export default function BranchFacilities({ data }: BranchFacilitiesProps) {
               <Image
                 src={facility.image}
                 alt={facility.alt}
-                width={360}
-                height={240}
-                className="h-48 w-full object-cover transition-transform duration-300 hover:scale-105"
+                className="w-full object-cover"
+                width={407}
+                height={305}
               />
-              <div className="p-6">
-                <h3 className="mb-2 text-xl font-bold text-gray-800">
+              <div className="p-4">
+                <h3 className="mb-2 text-[18px] font-bold text-brandBlue md:mb-4 md:text-[22px]">
                   {facility.title}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-[15px] font-medium leading-relaxed text-gray-500">
                   {facility.description}
                 </p>
               </div>

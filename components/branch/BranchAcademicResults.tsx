@@ -3,13 +3,20 @@
 import Image from "next/image";
 import { Splide, SplideSlide } from "@splidejs/react-splide";
 import "@splidejs/react-splide/css";
+import { useModal } from "@/context/ModalContext";
 import { BranchAcademicResultsData } from "@/data/branchStaticData";
 
 interface BranchAcademicResultsProps {
   data: BranchAcademicResultsData;
+  onOpenModal?: (action: "brochure" | "fees" | "enquiry", title?: string) => void;
 }
 
-export default function BranchAcademicResults({ data }: BranchAcademicResultsProps) {
+export default function BranchAcademicResults({
+  data,
+  onOpenModal,
+}: BranchAcademicResultsProps) {
+  const { openModal } = useModal();
+  const handleOpenModal = onOpenModal || openModal;
   const scrollingResults = [...data.results, ...data.results];
 
   return (
@@ -23,7 +30,7 @@ export default function BranchAcademicResults({ data }: BranchAcademicResultsPro
         </p>
 
         <div
-          id="branch-academic-results-slider"
+          id="academic-results-slider"
           className="results-slider-wrapper relative max-w-6xl mx-auto px-2 sm:px-6"
         >
           <Splide
@@ -48,41 +55,51 @@ export default function BranchAcademicResults({ data }: BranchAcademicResultsPro
                 },
                 640: {
                   perPage: 1,
-                  gap: "16px",
+                  gap: "20px",
                 },
               },
             }}
           >
             {scrollingResults.map((result, index) => (
               <SplideSlide key={`${result.name}-${index}`}>
-                <div className="group relative overflow-hidden rounded-2xl bg-white p-6 shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-                  <div className="relative mx-auto mb-4 h-32 w-32 overflow-hidden rounded-full border-4 border-brandOrange">
+                <div className="flex h-full flex-col items-center">
+                  <div className="relative w-[88%] sm:w-full max-w-[320px] sm:max-w-none h-80 sm:h-81.25 md:h-83.5 rounded-2xl md:rounded-3xl overflow-hidden bg-[#0a4b78] shadow-md mb-4 mx-auto">
                     <Image
                       src={result.image}
                       alt={result.name}
-                      width={128}
-                      height={128}
-                      className="h-full w-full object-cover"
+                      fill
+                      sizes="(max-width: 640px) 320px, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover object-top"
+                      draggable={false}
                     />
                   </div>
 
-                  <div className="text-center">
-                    <span className="mb-2 inline-block rounded-full bg-[#15539B] px-4 py-1 text-sm font-bold text-[#FCD200]">
-                      {result.score}
-                    </span>
+                  <h3 className="text-base font-bold text-black md:text-lg">
+                    {result.name}
+                  </h3>
 
-                    <h3 className="text-lg font-bold text-gray-800">
-                      {result.name}
-                    </h3>
+                  <div className="my-1 text-2xl font-bold text-brandBlue md:text-3xl">
+                    {result.score}
+                  </div>
 
-                    <p className="text-sm font-medium text-gray-500">
-                      {result.exam}
-                    </p>
+                  <div className="text-[10px] uppercase tracking-wide text-gray-500 md:text-xs">
+                    {result.exam}
                   </div>
                 </div>
               </SplideSlide>
             ))}
           </Splide>
+        </div>
+
+        <div className="mt-8">
+          <button
+            type="button"
+            onClick={() => handleOpenModal("enquiry", "Get Call Back for Your Query")}
+            className="w-full rounded bg-brandOrange px-8 py-3 font-bold text-white shadow-lg transition hover:bg-orange-600 sm:w-auto cursor-pointer"
+          >
+            <i className="fas fa-headset mr-2" />
+            Get Call Back for Your Query
+          </button>
         </div>
       </div>
     </section>
